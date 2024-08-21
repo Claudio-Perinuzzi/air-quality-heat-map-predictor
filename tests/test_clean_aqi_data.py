@@ -9,8 +9,8 @@ class TestCleanAQIData(unittest.TestCase):
     
     # Prepares the test fixture
     def setUp(self):
-        self.input_file = 'data/raw/raw_aqi_data.csv'
-        self.output_file = 'data/cleaned/test_cleaned_aqi_data.csv'
+        self.input_file = 'data/raw_aqi_data.csv'
+        self.output_file = 'data/test_cleaned_aqi_data.csv'
 
     def test_clean_aqi_data(self):
 
