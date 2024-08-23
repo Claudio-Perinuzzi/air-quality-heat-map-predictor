@@ -1,0 +1,148 @@
+
+import pandas as pd
+
+# Appends the calculated AQI for each pollutant in the dataframe
+def append_aqi_to_df(df):
+    df.loc[df["Name"] == "Fine particles (PM 2.5)", "AQI"] = df["Data Value"].apply(calculate_aqi_pm25)
+    df.loc[df["Name"] == "Nitrogen dioxide (NO2)", "AQI"] = df["Data Value"].apply(calculate_aqi_no2)
+    df.loc[df["Name"] == "Ozone (O3)", "AQI"] = df["Data Value"].apply(calculate_aqi_o3)
+
+
+def calculate_aqi(concentration, breakpoints):
+    for bp_low, bp_high, i_low, i_high in breakpoints:
+        if bp_low <= concentration <= bp_high:
+            aqi = ((i_high - i_low) / (bp_high - bp_low)) * (concentration - bp_low) + i_low
+            return int(round(aqi))
+
+    return None
+
+def calculate_aqi_pm25(concentration):
+
+    # As per EPA guidelines, truncate to 1 decimal place
+    concentration = float(f"{concentration:.1f}")
+
+    pm25_breakpoints = [
+        (0.0, 9.0, 0, 50),
+        (9.1, 35.4, 51, 100),
+        (35.5, 55.4, 101, 150),
+        (55.5, 125.4, 151, 200),
+        (125.5, 225.4, 201, 300),
+        (225.5, float('inf'), 301, float('inf'))
+    ]
+    
+    return calculate_aqi(concentration, pm25_breakpoints)
+
+
+def calculate_aqi_no2(concentration):
+    
+    # As per EPA guidelines, truncate to integer
+    concentration = int(concentration)
+
+    no2_breakpoints = [
+        (0, 53, 0, 50),
+        (54, 100, 51, 100),
+        (101, 360, 101, 150),
+        (361, 649, 151, 200),
+        (650, 1249, 201, 300),
+        (1250, float('inf'), 301, float('inf'))    
+    ]
+
+    return calculate_aqi(concentration, no2_breakpoints)
+
+
+# o3 is measured avg 8 hours in NYC
+def calculate_aqi_o3(concentration):
+    
+    # As per EPA guidelines, truncate to 3 decimal places
+    concentration = float(f"{concentration:.3f}")
+
+    o3_breakpoints = [
+        (0, 54, 0, 50),
+        (55, 70, 51, 100),
+        (71, 85, 101, 150),
+        (86, 105, 151, 200),
+        (106, 200, 201, 300),
+        (201, float('inf'), 301, float('inf'))    
+    ]
+
+    return calculate_aqi(concentration, o3_breakpoints)
+
+
+def calculate_aqi_average(df, time_period, districts): 
+    '''
+    Function that calculates the average AQI for a given boro_cd during a certain time_period
+
+    df          -> data frame
+    time_period -> str, time period pollutant was calculated during
+    districts   -> list, list of districts for the given boro_cd
+    '''
+    
+    # Running collection of all aqi vals
+    all_aqi_vals = [] 
+
+    # For every district, filter the data frame based on location and time period
+    # Collect AQI values from the filtered data frame and extend to all AQI values list
+    for district in districts:
+        filtered_df = df[(df['Geo Place Name'] == district) & (df['Time Period'] == time_period)]
+        aqi_vals = filtered_df['Data Value']
+        all_aqi_vals.extend(aqi_vals)
+        # print(all_aqi_vals)
+   
+    # Convert to Pandas Series, convert to numeric and drop NaNs
+    all_aqi_vals = pd.Series(all_aqi_vals).apply(pd.to_numeric, errors='coerce').dropna()
+    
+    # Calculate and return the average
+    if len(all_aqi_vals) > 0:
+        average_value = all_aqi_vals.mean()
+    else:
+        average_value = None  
+    
+    # print("The mean of this is", average_value)
+    return float(f"{average_value:.2f}")
+
+
+
+# https://docs.airnowapi.org/aq101
+# AQI Numbers	AQI Category (Descriptor)	AQI Color	  Hexadecimal Color Value	Category Number
+# 0 - 50	    Good	                    Green	        (00e400)	            1
+# 51 - 100	    Moderate	                Yellow	        (ffff00)	            2
+# 101 - 150	    Unhealthy Sensitive Group	Orange	        (ff7e00)	            3
+# 151 - 200	    Unhealthy	                Red	            (ff0000)	            4
+# 201 - 300	    Very Unhealthy	            Purple	        (8f3f97)	            5
+# 301 - 500	    Hazardous	                Maroon	        (7e0023)	            6
+def interpolate_color(aqi):
+
+    # If a negative value is passed in, set the AQI to 0
+    aqi = max(aqi, 0)
+    
+    # AQI breakpoints to corresponding RGB values
+    aqi_colors = [
+        (0,   (0, 228, 0)),     # Green
+        (50,  (255, 255, 0)),   # Yellow
+        (100, (255, 126, 0)),   # Orange
+        (150, (255, 0, 0)),     # Red
+        (200, (143, 63, 151)),  # Purple
+        (300, (126, 0, 35))     # Maroon
+    ]
+
+    # Find the lower and upper RGB colors for the passed in AQI
+    for i in range(len(aqi_colors) - 1):
+        if aqi_colors[i][0] <= aqi <= aqi_colors[i + 1][0]:
+            lower_aqi, lower_color = aqi_colors[i]
+            upper_aqi, upper_color = aqi_colors[i + 1]
+            break
+    else:
+        # AQI is over range, then return the upper color
+        upper_color = aqi_colors[-1][1]
+        return f'#{upper_color[0]:02x}{upper_color[1]:02x}{upper_color[2]:02x}'
+
+
+    # Calculate the ratio of the AQI within this range
+    ratio = (aqi - lower_aqi) / (upper_aqi - lower_aqi)
+
+    # Interpolate the RGB values from the upper and lower RGB color bounds and return this RGB color
+    r = int(lower_color[0] + (upper_color[0] - lower_color[0]) * ratio)
+    g = int(lower_color[1] + (upper_color[1] - lower_color[1]) * ratio)
+    b = int(lower_color[2] + (upper_color[2] - lower_color[2]) * ratio)
+    
+    return f'#{r:02x}{g:02x}{b:02x}'

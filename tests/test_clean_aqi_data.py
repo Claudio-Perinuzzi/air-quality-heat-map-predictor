@@ -3,6 +3,7 @@ import pandas as pd
 from src.clean_aqi_data import clean_aqi_data
 import os
 
+
 # python -m unittest discover -s tests
 
 class TestCleanAQIData(unittest.TestCase):
