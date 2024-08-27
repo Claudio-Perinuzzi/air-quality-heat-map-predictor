@@ -6,8 +6,14 @@ Constants for mapping the borough cd/id to the location the testing was performe
 # https://communityprofiles.planning.nyc.gov/brooklyn/2
 '''
 
+# Respective average Min and Max values anually/seasonally.
+NYC_ANNUAL_MIN_AQI   = 7.38
+NYC_ANNUAL_MAX_AQI   = 27.45
+NYC_SEASONAL_MIN_AQI = 10.1 
+NYC_SEASONAL_MAX_AQI = 30.83
+
 # ["Time Period"] Column
-# Used for seasonal scroll bar
+# Used for seasonal scroll bar & calculating seasonal averages
 SEASONAL_AQI_AVERAGE = ( 
     'Winter 2008-09', 'Summer 2009',
     'Winter 2009-10', 'Summer 2010',
@@ -26,7 +32,7 @@ SEASONAL_AQI_AVERAGE = (
 )
 
 # ["Time Period"] Column
-# Used for yearly scroll bar
+# Used for yearly scroll bar & calculating annual averages
 ANNUAL_AQI_AVERAGE = (
     'Annual Average 2009', 'Annual Average 2010', 'Annual Average 2011',
     'Annual Average 2012', 'Annual Average 2013', 'Annual Average 2014',
@@ -99,6 +105,90 @@ BORO_CDS = (
     ('502', 'Willowbrook', 'South Beach and Willowbrook (CD2)', 'South Beach - Tottenville'),
     ('503', 'Southern SI', 'Tottenville and Great Kills (CD3)', 'South Beach - Tottenville'),
 )
+
+# Legend for standard AQI colors
+TRUE_LEGEND_HTML = '''
+    {% macro html(this, kwargs) %}
+
+    <div style="
+        position: fixed; 
+        bottom: 20px; 
+        left: 50%; 
+        transform: translateX(-50%);
+        width: 90%;  /* Increase width */
+        height: 60px;  /* Increase height */
+        background: linear-gradient(to right, rgb(0, 228, 0), rgb(255, 255, 0), rgb(255, 126, 0), rgb(255, 0, 0), rgb(143, 63, 151), rgb(126, 0, 35)); 
+        border:2px solid black; 
+        z-index:1000; 
+        font-size:12px;
+        line-height: 1.2em;  /* Adjust line height */
+        color: black;  /* Set font color to black */
+        text-align: center;
+        padding: 5px 10px;  /* Add padding */
+        box-sizing: border-box;
+    ">
+
+        <span style="float:left; width: 12%; text-align: center;"><strong>0-50</strong><br>(Good)</span>
+        <span style="float:left; width: 12%; text-align: center;"><strong>51-100</strong><br>(Moderate)</span>
+        <span style="float:left; width: 18%; text-align: center;"><strong>101-150</strong><br>(Unhealthy for Sensitive Groups)</span>
+        <span style="float:left; width: 14%; text-align: center;"><strong>151-200</strong><br>(Unhealthy)</span>
+        <span style="float:left; width: 14%; text-align: center;"><strong>201-300</strong><br>(Very Unhealthy)</span>
+        <span style="float:right; width: 14%; text-align: center;"><strong>301-500</strong><br>(Hazardous)</span>
+    </div>
+
+    {% endmacro %}
+    '''
+
+
+
+# Custom legend for visualizing and defining NYC's min and max AQI values/colors
+NYC_LEGEND_HTML = '''
+    {% macro html(this, kwargs) %}
+
+    <div style="
+        position: fixed; 
+        bottom: 20px; 
+        left: 50%; 
+        transform: translateX(-50%);
+        width: 90%;  /* Increase width */
+        height: 60px;  /* Increase height to accommodate the text */
+        background: linear-gradient(to right, rgb(0, 228, 0), rgb(255, 255, 0), rgb(255, 126, 0), rgb(255, 0, 0), rgb(143, 63, 151), rgb(126, 0, 35)); 
+        border: 2px solid black; 
+        z-index: 1000; 
+        font-size: 12px;
+        line-height: 1.2em;  /* Adjust line height */
+        color: black;  /* Set font color to black */
+        text-align: center;
+        padding: 5px 10px;  /* Add padding */
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    ">
+
+        <!-- Adjusted labels for the AQI range -->
+        <div style="display: flex; justify-content: space-between; width: 100%;">
+            <span style="text-align: center;"><strong>7.38</strong><br>(NYC Min AQI)</span>
+            <span style="text-align: center;"><strong>15</strong></span>
+            <span style="text-align: center;"><strong>20</strong></span>
+            <span style="text-align: center;"><strong>25</strong></span>
+            <span style="text-align: center;"><strong>30.83</strong><br>(NYC Max AQI)</span>
+        </div>
+
+        <!-- Centered message indicating the AQI values are good -->
+        <div style="
+            margin-top: 5px;
+            text-align: center;
+            font-weight: bold;
+            width: 100%;
+        ">
+             Air Quality Index Values in This Range (0-50) Are Good 
+        </div>
+    </div>
+
+    {% endmacro %}
+    '''
+
 
 
 
