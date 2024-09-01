@@ -6,7 +6,7 @@ Constants for mapping the borough cd/id to the location the testing was performe
 # https://communityprofiles.planning.nyc.gov/brooklyn/2
 '''
 
-# Respective average Min and Max values anually/seasonally.
+# Respective average Min and Max values annually/seasonally.
 NYC_ANNUAL_MIN_AQI   = 7.38
 NYC_ANNUAL_MAX_AQI   = 27.45
 NYC_SEASONAL_MIN_AQI = 10.1 

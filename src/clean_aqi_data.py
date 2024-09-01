@@ -7,7 +7,7 @@ from branca.element import Template, MacroElement
 import os
 
 
-def ensure_filtered_polutants_cvs(input_path, output_path, polutants):   
+def ensure_filtered_pollutants_cvs(input_path, output_path, pollutants):   
     """
     Ensures and filters the dataset based on specific pollutants of interest 
     and saves the cleaned data to a CSV file.
@@ -15,12 +15,12 @@ def ensure_filtered_polutants_cvs(input_path, output_path, polutants):
     Parameters:
     - input_file  (str): Path to the input CSV file containing the raw AQI data.
     - output_file (str): Path where the cleaned CSV file will be saved.
-    - polutants   (list): list of pollutants to be filtered
+    - pollutants  (list): list of pollutants to be filtered
     """       
     
     if not os.path.exists(output_path):
         df = pd.read_csv(input_path)
-        cleaned_df = df[df["Name"].isin(polutants)]
+        cleaned_df = df[df["Name"].isin(pollutants)]
         cleaned_df.to_csv(output_path, index=False)
         print(f"Filtered data has been saved in {output_path}")
 
@@ -36,7 +36,7 @@ def ensure_annual_aqi_maps(df):
             print(f"{map_filename} exists")
 
 
-# Generate HTMLs for seasonal AQI averages if they don't exisit
+# Generate HTMLs for seasonal AQI averages if they don't exist
 def ensure_seasonal_aqi_maps(df):
     for season in SEASONAL_AQI_AVERAGE:
         map_filename = f"data/maps/seasonal/Map_{season}.html"
@@ -103,7 +103,7 @@ def generate_aqi_average_html(df, year, map_filename, is_annual):
     # Define legend HTML style
     legend_html = NYC_LEGEND_HTML # See borough_mapping.py for custom HTML
 
-    # Crate a Macro Element object with the legend, and add it to the map as a child
+    # Create a Macro Element object with the legend, and add it to the map as a child
     legend = MacroElement()
     legend._template = Template(legend_html)
     m.get_root().add_child(legend)

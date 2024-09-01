@@ -107,8 +107,8 @@ def calculate_aqi_average(df, time_period, districts):
 
 def interpolate_true_color(aqi):
     '''
-    Function that interpolates the true standarized AQI colors as defined below.
-    NYC's 5 buroughs are relatively in the good and moderate range so the heatmap
+    Function that interpolates the true standardized AQI colors as defined below.
+    NYC's 5 boroughs are relatively in the good and moderate range so the heatmap
     won't tell use much how AQI changes over the years/seasons, the interpolate_nyc_color 
     function below is used instead specifically for nyc to visual how AQI changes over the years/seasons
 
@@ -164,8 +164,8 @@ def interpolate_nyc_color(aqi, is_annual):
     '''
     Custom interpolating color function for NYC's borough average max and min values
     Note:   NYC averages good to low moderate air quality. By defining a custom interpolating color,
-            with color endpoints ranging from the lowest to highest avergae AQI, we can visualize
-            NYC's heatmap better. The AQI colors defined here are not standarized and are used for
+            with color endpoints ranging from the lowest to highest average AQI, we can visualize
+            NYC's heatmap better. The AQI colors defined here are not standardized and are used for
             visual purposes.
     '''
 
