@@ -4,26 +4,24 @@ from clean_aqi_data import *
 from aqi_calculations import *
 from borough_mapping import *
 
-# TODO:
-# Implement a option for a button to change the color for a more drastic appearence [DONE, add standard?]
-# the highest mean in the data set will be the end color [DONE]
-# This will be more apparent for the predictive model [TODO]
+# TODO: predictive model
 
 
 def main(): 
     
-    # Raw/clean data paths and polutants of interest
+    # Raw/clean data paths and pollutants of interest
     input_path  = "data/raw_aqi_data.csv"
     output_path = "data/cleaned_aqi_data.csv"
-    polutants   = ["Fine particles (PM 2.5)", "Nitrogen dioxide (NO2)", "Ozone (O3)"]
+    pollutants   = ["Fine particles (PM 2.5)", "Nitrogen dioxide (NO2)", "Ozone (O3)"]
 
 
-    # Filter the polutants of interest if the cleaned data set is not present
-    ensure_filtered_polutants_cvs(input_path, output_path, polutants)
+    # Filter the pollutants of interest if the cleaned data set is not present
+    ensure_filtered_pollutants_cvs(input_path, output_path, pollutants)
 
 
-    # Generate a data frame and append the AQI caluclations to each row
-    df = pd.read_csv(output_path)
+    # Generate a data frame and append the AQI calculations to each row
+    cols = ["Name", "Geo Place Name", "Time Period", "Data Value"]
+    df = pd.read_csv(output_path, usecols=cols)
     append_aqi_to_df(df)
 
 
@@ -74,7 +72,7 @@ def tab_1():
 def tab_2():
     st.title("NYC Seasonal Average AQI Heatmap")
 
-    # Render slidebar and map slidebar value index to seasonal aqi average tuple
+    # Render slide bar and map slide bar value index to seasonal aqi average tuple
     season_index = st.slider("Select Season", min_value=0, max_value=len(SEASONAL_AQI_AVERAGE) - 1)
     selected_season = SEASONAL_AQI_AVERAGE[season_index]
 
@@ -91,7 +89,6 @@ def tab_2():
         html_content = file.read()
     st.components.v1.html(html_content, height=600)
     
-
 
 
 
