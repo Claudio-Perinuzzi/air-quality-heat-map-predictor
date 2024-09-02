@@ -3,43 +3,80 @@ import pandas as pd
 from clean_aqi_data import *
 from aqi_calculations import *
 from borough_mapping import *
+from lr_model import *
+
+
 
 # TODO: predictive model
 
 
 def main(): 
     
-    # Raw/clean data paths and pollutants of interest
-    input_path  = "data/raw_aqi_data.csv"
-    output_path = "data/cleaned_aqi_data.csv"
-    pollutants   = ["Fine particles (PM 2.5)", "Nitrogen dioxide (NO2)", "Ozone (O3)"]
-
-
     # Filter the pollutants of interest if the cleaned data set is not present
-    ensure_filtered_pollutants_cvs(input_path, output_path, pollutants)
+    ensure_filtered_pollutants_csv(
+        input_path  = "data/raw_aqi_data.csv",
+        output_path = "data/cleaned_aqi_data.csv",
+        pollutants  = ["Fine particles (PM 2.5)", "Nitrogen dioxide (NO2)", "Ozone (O3)"]
+    )
 
-
-    # Generate a data frame and append the AQI calculations to each row
-    cols = ["Name", "Geo Place Name", "Time Period", "Data Value"]
-    df = pd.read_csv(output_path, usecols=cols)
+    # Generate a data frame with columns of interest
+    df = pd.read_csv(
+        filepath_or_buffer = "data/cleaned_aqi_data.csv",        
+        usecols = ["Name", "Geo Place Name", "Time Period", "Data Value"]
+    )
+    
+    # Append the AQI calculations to each row of the data frame
     append_aqi_to_df(df)
 
+########################### Annual
 
-    # Generate HTMLs for the annual and seasonal AQI averages if they don't exist
-    ensure_annual_aqi_maps(df)
-    ensure_seasonal_aqi_maps(df)
+    # Generate a CSV dataset with annual averages for each borough cd if it does not exist
+    annual_input_path = "data/annual_aqi_averages.csv"
+    ensure_annual_averages_csv(df, annual_input_path)
 
-
-    # Define Tabs
-    tab1, tab2 = st.tabs(["Annual AQI Average", "Seasonal AQI Average"])
-
-    # Annual AQI Average tab
-    with tab1:
-        tab_1()
+    # Read the data into a dataframe and convert 'Year' column to numerical values
+    annual_df = pd.read_csv(annual_input_path)
+    annual_df['Year'] = annual_df['Year'].str.extract(r'(\d+)').astype(int)    
     
-    # Seasonal AQI Average tab
-    with tab2:
-        tab_2()
+    # Creates a scatter plot of AQI averages for each district over the years
+    ensure_annual_grouped_scatter_plots(annual_df)
+
+    # Train a linear regression model if a pickle of the model does not exist
+    ensure_annual_lr_model(annual_df)
+
+    # Generate future year AQI predictions maps if they do not exist
+    ensure_annual_prediction_maps(years=5) # 5 years in advance by default
+
+############################# Seasonal
+
+    winter_input_path = "data/winter_aqi_averages.csv"
+    ensure_winter_averages_csv(df, winter_input_path)
+
+    winter_df = pd.read_csv(winter_input_path)
+
+    # Train a linear regression model if a pickle of the model does not exist
+    ensure_winter_lr_model(winter_df)
+
+    # # Generate future year AQI predictions maps if they do not exist
+    ensure_winter_prediction_maps() # 5 years in advance 
+
+
+
+    # # Generate HTMLs for the annual and seasonal AQI averages if they don't exist
+    # ensure_annual_aqi_maps(df)
+    # ensure_seasonal_aqi_maps(df)
+
+
+    # # Define Tabs
+    # tab1, tab2 = st.tabs(["Annual AQI Average", "Seasonal AQI Average"])
+
+    # # Annual AQI Average tab
+    # with tab1:
+    #     tab_1()
+    
+    # # Seasonal AQI Average tab
+    # with tab2:
+    #     tab_2()
 
     
  
