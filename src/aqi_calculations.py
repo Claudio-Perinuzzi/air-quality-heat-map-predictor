@@ -173,9 +173,11 @@ def interpolate_nyc_color(aqi, is_annual):
     if is_annual:
         min_aqi = NYC_ANNUAL_MIN_AQI     # AQI = 7.38
         max_aqi = NYC_ANNUAL_MAX_AQI     # AQI = 27.45
+        aqi = min_aqi if aqi < NYC_ANNUAL_MIN_AQI else aqi # For future values that are lower than 7.38
     else:
         min_aqi = NYC_SEASONAL_MIN_AQI   # AQI = 10.1 
         max_aqi = NYC_SEASONAL_MAX_AQI   # AQI = 30.83
+        aqi = min_aqi if aqi < NYC_SEASONAL_MIN_AQI else aqi # For future values that are lower than 7.38
 
     # Step size used to create evenly spaced intervals
     step = (max_aqi - min_aqi) / 5
