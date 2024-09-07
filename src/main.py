@@ -7,11 +7,15 @@ from lr_model import *
 
 
 
-# TODO: predictive model
+# TODO: stremlit, cleanup, document, scatter plot boro cd names, scatter plots for summer and winter
 
 
 def main(): 
-    
+
+#############################################################################################
+# Clean/filter raw data, append AQI calculations and ensure past annual & seasonal maps exist
+#############################################################################################
+
     # Filter the pollutants of interest if the cleaned data set is not present
     ensure_filtered_pollutants_csv(
         input_path  = "data/raw_aqi_data.csv",
@@ -28,44 +32,67 @@ def main():
     # Append the AQI calculations to each row of the data frame
     append_aqi_to_df(df)
 
-########################### Annual
+    # Generate HTMLs for the past annual and seasonal AQI averages if they don't exist
+    ensure_annual_aqi_maps(df)
+    ensure_seasonal_aqi_maps(df)
+
+
+############################################################################################# 
+# Annual Predictions
+#############################################################################################
 
     # Generate a CSV dataset with annual averages for each borough cd if it does not exist
     annual_input_path = "data/annual_aqi_averages.csv"
-    ensure_annual_averages_csv(df, annual_input_path)
+    ensure_averages_csv(df, annual_input_path, time='Annual Averages')
 
     # Read the data into a dataframe and convert 'Year' column to numerical values
     annual_df = pd.read_csv(annual_input_path)
-    annual_df['Year'] = annual_df['Year'].str.extract(r'(\d+)').astype(int)    
     
     # Creates a scatter plot of AQI averages for each district over the years
     ensure_annual_grouped_scatter_plots(annual_df)
 
     # Train a linear regression model if a pickle of the model does not exist
-    ensure_annual_lr_model(annual_df)
+    ensure_lr_model(annual_df, file_name='models/annual_model.pkl')
 
     # Generate future year AQI predictions maps if they do not exist
-    ensure_annual_prediction_maps(years=5) # 5 years in advance by default
+    ensure_prediction_maps(time='Annual', years=5) # 5 years in advance by default
 
-############################# Seasonal
+
+#############################################################################################
+# Winter Predictions
+#############################################################################################
 
     winter_input_path = "data/winter_aqi_averages.csv"
-    ensure_winter_averages_csv(df, winter_input_path)
+    ensure_averages_csv(df, winter_input_path, time='Winter')
 
     winter_df = pd.read_csv(winter_input_path)
 
     # Train a linear regression model if a pickle of the model does not exist
-    ensure_winter_lr_model(winter_df)
+    ensure_lr_model(winter_df, file_name='models/winter_model.pkl')
 
-    # # Generate future year AQI predictions maps if they do not exist
-    ensure_winter_prediction_maps() # 5 years in advance 
+    # Generate future year AQI predictions maps if they do not exist
+    ensure_prediction_maps(time="Winter", years=5) # 5 years in advance 
 
 
+#############################################################################################
+# Summer Predictions
+#############################################################################################
 
-    # # Generate HTMLs for the annual and seasonal AQI averages if they don't exist
-    # ensure_annual_aqi_maps(df)
-    # ensure_seasonal_aqi_maps(df)
+    summer_input_path = "data/summer_aqi_averages.csv"
+    ensure_averages_csv(df, summer_input_path, time='Summer')
 
+    summer_df = pd.read_csv(summer_input_path)
+
+    # Train a linear regression model if a pickle of the model does not exist
+    ensure_lr_model(summer_df, file_name='models/summer_model.pkl')
+
+    # Generate future year AQI predictions maps if they do not exist
+    ensure_prediction_maps(time="Summer", years=5) # 5 years in advance 
+
+
+#############################################################################################
+# Streamlit
+#############################################################################################
 
     # # Define Tabs
     # tab1, tab2 = st.tabs(["Annual AQI Average", "Seasonal AQI Average"])
