@@ -5,10 +5,8 @@ import geopandas as gpd
 import folium
 from branca.element import Template, MacroElement
 import os
-
 import matplotlib.pyplot as plt
 import pickle
-from sklearn.preprocessing import OneHotEncoder
 
 
 
@@ -30,6 +28,76 @@ def ensure_filtered_pollutants_csv(input_path, output_path, pollutants):
         print(f"Filtered data has been saved in {output_path}")
 
 
+# returns an appended list of the annual aqi averages for the given districts (helper function to ensure_averages_csv)
+def get_annual_aqi_averages(data, df, boro_cd, districts):  
+    # For each year in ANNUAL_AQI_AVERAGE, calculate the AQI and store the data
+    for year in ANNUAL_AQI_AVERAGE:
+        average_aqi = calculate_aqi_average(df, year, districts)  # Calculate AQI for the current year for the given districts
+        year_date = year.split(' ')[2]
+        # Append the data as a dictionary
+        data.append({
+            'Borough CD': boro_cd,
+            'Year': year_date,
+            'Average AQI': average_aqi
+        })
+    return data
+
+# returns an appended list of the winter aqi averages for the given districts (helper function to ensure_averages_csv)
+def get_winter_aqi_averages(data, df, boro_cd, districts):
+    # For each winter, calculate the AQI and store the data
+    for winter in WINTER_SEASONS:
+        average_aqi = calculate_aqi_average(df, winter, districts)  # Calculate AQI for the current winter for the given districts
+        second_year = winter.split(' ')[1].split('-')[1] # Splits the string on spqces, gets the second element and does it again on - to get the second year
+        second_year = f'20{second_year}'
+        # Append the data as a dictionary
+        data.append({
+            'Borough CD': boro_cd,
+            'Year': second_year,
+            'Average AQI': average_aqi
+        })
+    return data
+
+# returns an appended list of the summer aqi averages for the given districts (helper function to ensure_averages_csv)
+def get_summer_aqi_averages(data, df, boro_cd, districts):
+    # For each summer, calculate the AQI and store the data
+    for summer in SUMMER_SEASONS:
+        average_aqi = calculate_aqi_average(df, summer, districts)  # Calculate AQI for the current summer for the given districts
+        summer_year = summer.split()[1]  # Split the string by spaces and get the second element which represents the year
+        # Append the data as a dictionary
+        data.append({
+            'Borough CD': boro_cd,
+            'Year': summer_year,
+            'Average AQI': average_aqi
+        })
+    return data
+
+
+# ensures that the annual, winter and summer AQI average CSVs exist and if not, generates them
+def ensure_averages_csv(df, file_name, time):
+    if not os.path.exists(file_name):
+
+        # Initialize an empty list to store each row as a dictionary
+        data = []   
+
+        for boro in BORO_CDS:       # Iterate over each borough code and corresponding districts
+            boro_cd = boro[0]       # Extract boro_cd number
+            districts = boro[1:]    # Extract the list of districts
+
+            # get the correct aqi averages for the given time frame for the given boro_cds and append it to the data list
+            if time == 'Annual Averages':
+                get_annual_aqi_averages(data, df, boro_cd, districts)
+            elif time == 'Winter':
+                get_winter_aqi_averages(data, df, boro_cd, districts)
+            elif time == 'Summer':
+                get_summer_aqi_averages(data, df, boro_cd, districts)
+            else:
+                raise ValueError(f"Invalid time frame: {time}. Expected 'Annual Averages', 'Winter', or 'Summer'.")
+            
+        # Convert the list of dictionaries into a DataFrame and save it
+        df = pd.DataFrame(data)
+        df.to_csv(file_name, index=False)
+        print(f"{time} data has been saved in {file_name}")
+
 
 # Generate HTMLs for the annual AQI averages if they don't exist
 def ensure_annual_aqi_maps(df):
@@ -50,84 +118,54 @@ def ensure_seasonal_aqi_maps(df):
         else:
             print(f"{map_filename} exists")
 
-## DONE
-def ensure_annual_prediction_maps(years=5):
+
+# Ensure that the future prediciton maps exits, if not, generate them
+def ensure_prediction_maps(time, years=5):
     curr_year = 2023
     for future_year in range(curr_year, curr_year + years):
-        map_filename = f"data/maps/annual/Map_Annual Average Future {future_year}.html"
+
+        if time == 'Annual':
+            map_filename = f"data/maps/annual/Map_Annual Average Future {future_year}.html"
+            model_path = 'models/annual_model.pkl'
+        elif time == 'Winter':
+            map_filename = f"data/maps/seasonal/Map_Winter_Future {future_year}.html"
+            model_path = 'models/winter_model.pkl'
+        elif time == 'Summer':
+            map_filename = f"data/maps/seasonal/Map_Summer_Future {future_year}.html"
+            model_path = 'models/summer_model.pkl'        
+        else:
+            raise ValueError(f"Invalid time frame: {time}. Expected 'Annual', 'Winter', or 'Summer'.")
+
         if not os.path.exists(map_filename):
-            generate_future_annual_aqi_average_html(future_year, map_filename, is_annual=True)
+            generate_future_aqi_average_html(future_year, map_filename, model_path, time)
         else:
             print(f"{map_filename} exists")
 
-## DONE
-def generate_future_annual_aqi_average_html(future_year, map_filename, is_annual):
+
+# Generate future AQI average HTMLs
+def generate_future_aqi_average_html(future_year, map_filename, model_path, time):
     
     print(f"Generating {map_filename}")
 
-    with open('models/annual_model.pkl', 'rb') as file:
+    with open(model_path, 'rb') as file:
         model = pickle.load(file)
         
+        is_annual = True if time == 'Annual' else False
+
         # Mapping between boro_cd to a list containing: [color of aqi, predicted average aqi]
         color_and_aqi = {} 
         for boro in BORO_CDS:
             boro_cd = boro[0]     # Boro cd number
             pred_df = pd.DataFrame({'Borough CD': [boro_cd], 'Year': [future_year]})
             aqi_pred = model.predict(pred_df)
-            aqi_extracted = aqi_pred[0, 0] # remove arrays from prediction
+            aqi_extracted = aqi_pred[0] 
             color = interpolate_nyc_color(aqi_pred, is_annual)
             color_and_aqi[boro_cd] = [color, aqi_extracted]
 
     generate_html(color_and_aqi, map_filename)
 
-# SEASONAL PREDICTIONS IP
-################################################################################
-
-##IP #########
-def ensure_winter_prediction_maps(years=5):
-    curr_year = 2023
-    for future_year in range(curr_year, curr_year + years):    
-        map_filename = f"data/maps/seasonal/Map_Winter_Future {future_year}.html"
-        if not os.path.exists(map_filename):
-            generate_future_seasonal_aqi_average_html(future_year, map_filename, is_annual=False)
-        else:
-            print(f"{map_filename} exists")
-
-#IP FIX ME #########    
-def generate_future_seasonal_aqi_average_html(winter_year, map_filename, is_annual):
-    print(f"Generating {map_filename}")
-
-    # Load the trained winter model
-    with open('models/winter_model.pkl', 'rb') as file:
-        model = pickle.load(file)
-
-    # Define feature columns used for training
-    feature_columns = ['Borough CD', 'Year']
-    
-    # Mapping between boro_cd to a list containing: [color of aqi, predicted average aqi]
-    color_and_aqi = {} 
-    for boro in BORO_CDS:
-        boro_cd = boro[0]  # Boro cd number
-        pred_df = pd.DataFrame({'Borough CD': [boro_cd], 'Year': [winter_year]})
-        
-        # Ensure all columns are in the same order as the training data
-        for col in feature_columns:
-            if col not in pred_df.columns:
-                pred_df[col] = 0
-        pred_df = pred_df[feature_columns]
-
-        # Predict using the model
-        aqi_pred = model.predict(pred_df)
-        
-        # Extract the predicted AQI value from the 1-dimensional array
-        aqi_extracted = aqi_pred[0]  # remove arrays from prediction
-        color = interpolate_nyc_color(aqi_extracted, is_annual)
-        color_and_aqi[boro_cd] = [color, aqi_extracted]
-
-    generate_html(color_and_aqi, map_filename)
 
 
-################################################################################
 
 
 def generate_aqi_average_html(df, year, map_filename, is_annual):  
@@ -202,73 +240,9 @@ def generate_html(color_and_aqi, map_filename):
 
 
 
-## IP CLEAN
-def ensure_annual_averages_csv(df, file_name):
-    
-    if not os.path.exists(file_name):
-        # Initialize an empty list to store each row as a dictionary
-        data = []
-
-        # Iterate over each borough code and corresponding districts
-        for boro in BORO_CDS:
-            boro_cd = boro[0]     # Extract boro_cd number
-            districts = boro[1:]  # Extract the list of districts
-
-            # For each year in ANNUAL_AQI_AVERAGE, calculate the AQI and store the data
-            for year in ANNUAL_AQI_AVERAGE:
-                average_aqi = calculate_aqi_average(df, year, districts)  # Calculate AQI for the current year for the given districts
-                
-                # Append the data as a dictionary
-                data.append({
-                    'Borough CD': boro_cd,
-                    'Year': year,
-                    'Average AQI': average_aqi
-                })
-            
-        # Convert the list of dictionaries into a DataFrame
-        annual_df = pd.DataFrame(data)
-
-        annual_df.to_csv(file_name, index=False)
-        print(f"Annual Averages data has been saved in {file_name}")
-
-def extract_second_year(s):
-    return s.split(' ')[1].split('-')[1]
 
 
-#IP CLEAN
-def ensure_winter_averages_csv(df, file_name):
-    
-    if not os.path.exists(file_name):
-
-        # Initialize an empty list to store each row as a dictionary
-        data = []
-
-        # Iterate over each borough code and corresponding districts
-        for boro in BORO_CDS:
-            boro_cd = boro[0]     # Extract boro_cd number
-            districts = boro[1:]  # Extract the list of districts
-
-            for winter in WINTER_AQI_AVERAGE:
-                average_aqi = calculate_aqi_average(df, winter, districts)  # Calculate AQI for the current season for the given districts
-                
-                second_year = extract_second_year(winter)
-                second_year = f'20{second_year}'
-                # Append the data as a dictionary
-                data.append({
-                    'Borough CD': boro_cd,
-                    'Year': second_year,
-                    'Average AQI': average_aqi
-                })
-            
-        # Convert the list of dictionaries into a DataFrame
-        winter_df = pd.DataFrame(data)
-
-        winter_df.to_csv(file_name, index=False)
-        print(f"Winter Averages data has been saved in {file_name}")
-
-
-
-
+##### REVIEW SCATTER PLOTS
 
 
 # Checks if the annual scatter plots exist
