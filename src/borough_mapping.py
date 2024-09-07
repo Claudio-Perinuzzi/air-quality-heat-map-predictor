@@ -31,7 +31,7 @@ SEASONAL_AQI_AVERAGE = (
     'Winter 2021-22', 'Summer 2022' 
 )
 
-WINTER_AQI_AVERAGE = ( 
+WINTER_SEASONS = ( 
     'Winter 2008-09', 
     'Winter 2009-10', 
     'Winter 2010-11', 
@@ -46,6 +46,23 @@ WINTER_AQI_AVERAGE = (
     'Winter 2019-20', 
     'Winter 2020-21',
     'Winter 2021-22'
+)
+
+SUMMER_SEASONS = ( 
+    'Summer 2009',
+    'Summer 2010',
+    'Summer 2011',
+    'Summer 2012',
+    'Summer 2013',
+    'Summer 2014',
+    'Summer 2015',
+    'Summer 2016',
+    'Summer 2017',
+    'Summer 2018',
+    'Summer 2019', 
+    'Summer 2020', 
+    'Summer 2021',
+    'Summer 2022' 
 )
 
 # Used for generating future maps
