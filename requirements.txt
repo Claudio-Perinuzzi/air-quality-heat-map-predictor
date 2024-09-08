@@ -1,5 +1,0 @@
-streamlit
-geopandas
-folium
-pandas
-os
