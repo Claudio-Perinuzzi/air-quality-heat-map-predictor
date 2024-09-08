@@ -4,9 +4,18 @@ from sklearn.metrics import mean_squared_error
 import pickle
 import os
 
-# CLEAN UP
+#############################################################################################
+# Trains A Linear Regression Model for Predicting Future AQI Values
+#############################################################################################
 
 def ensure_lr_model(df, file_name):
+    '''
+    Ensures that a pickled linear regression model exists for the given file name.
+    If the model does not exist, then the function trains a the model based on
+    the given pre-filtered data frame consisting of either average annual, winter or summer
+    AQI averages. The trained model is then pickled for subsequent use.
+    '''
+
     if not os.path.exists(file_name):
         # Features and target
         features = ['Borough CD', 'Year']
