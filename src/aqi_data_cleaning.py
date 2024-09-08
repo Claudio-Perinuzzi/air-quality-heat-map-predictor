@@ -58,7 +58,7 @@ def get_winter_aqi_averages(data, df, boro_cd, districts):
     # For each winter, calculate the AQI and store the data
     for winter in WINTER_SEASONS:
         average_aqi = calculate_aqi_average(df, winter, districts)  # Calculate AQI for the current winter for the given districts
-        second_year = winter.split(' ')[1].split('-')[1] # Splits the string on spqces, gets the second element and does it again on - to get the second year
+        second_year = winter.split(' ')[1].split('-')[1] # Splits the string on spaces, gets the second element and does it again on - to get the second year
         second_year = f'20{second_year}'
         # Append the data as a dictionary
         data.append({
@@ -114,19 +114,8 @@ def ensure_averages_csv(df, file_name, time):
             else:
                 raise ValueError(f"Invalid time frame: {time}. Expected 'Annual Averages', 'Winter', or 'Summer'.")
         
-        
-
         # Convert the list of dictionaries into a DataFrame and save it
         df = pd.DataFrame(data)
-
-        add_aqi_differences(df)
-
-
         df.to_csv(file_name, index=False)
         print(f"{time} data has been saved in {file_name}")
 
-
-def add_aqi_differences(df):
-    gb =  df.groupby('Borough CD')
-    df['aqi_diff_prev_year'] = gb['Average AQI'].diff()
-    df['aqi_diff_prev_year'] = df['aqi_diff_prev_year'].fillna(0).round(2)

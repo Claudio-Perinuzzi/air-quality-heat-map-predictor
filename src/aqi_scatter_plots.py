@@ -14,16 +14,16 @@ import os
 def ensure_grouped_scatter_plots(df, time):
     '''
     Checks if the scatter plots exist in the asset directory
-    If not, generates the scatter plot for the given borrough
+    If not, generates the scatter plot for the given borough
     '''
     
     for cd_num in range(100, 600, 100):
         if time == 'Annual':
-            scatter_path = f"assets/annual_scatter_plot_boro_cd_{cd_num}s.png"
+            scatter_path = f"assets/scatter_plots/annual_scatter_plot_boro_cd_{cd_num}s.png"
         elif time == 'Winter':
-            scatter_path = f"assets/winter_scatter_plot_boro_cd_{cd_num}s.png"
+            scatter_path = f"assets/scatter_plots/winter_scatter_plot_boro_cd_{cd_num}s.png"
         elif time == 'Summer':
-            scatter_path = f"assets/summer_scatter_plot_boro_cd_{cd_num}s.png"
+            scatter_path = f"assets/scatter_plots/summer_scatter_plot_boro_cd_{cd_num}s.png"
         else:
             raise ValueError(f"Invalid time frame: {time}. Expected 'Annual', 'Winter', or 'Summer'.")
         

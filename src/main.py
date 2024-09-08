@@ -7,18 +7,15 @@ import streamlit as st
 #   - Initializes the system once which:
 #       - Checks, cleans and filters the AQI dataset
 #       - Calculates the average AQI
-#       - Generates HTML Maps and scatter plots
+#       - Generates past HTML Maps and scatter plots
 #       - Trains linear regression models
+#       - Generates future HTML Map predictions
 #   - Handles the rest of the streamlit UI logic
 #############################################################################################
 
-#TODO: TOOL tip, shows if future? finalize requirements, 
-# make a portfolio? YES! ADD MY JAVA PROJ THERE TOO!!! HAVE TO FIX IT, can i run in streamlit?
-# yes you have to call a jar file pretty much
-
 def main(): 
     
-    # Initlaize the system once and check to make sure all assets are available
+    # Initialize the system once and check to make sure all assets are available
     initialize()
 
     # Define Tabs
@@ -26,15 +23,15 @@ def main():
 
     # Annual AQI Average tab
     with annual_tab:
-        annual_tab()
+        display_annual_maps()
     
     # Seasonal AQI Average tab
     with seasonal_tab:
-        seasonal_tab()
+        display_seasonal_maps()
 
 
 # Annual AQI Average tab
-def annual_tab():
+def display_annual_maps():
     st.title("NYC Annual Average AQI Heatmap")
 
     # Render slidebar and map slidebar value index to annual aqi average tuple
@@ -49,14 +46,14 @@ def annual_tab():
     """, unsafe_allow_html=True)
 
     # Generate map name based on user's choice and render the HTML to streamlit
-    map_name = f"data/maps/annual/Map_{selected_year}.html"
+    map_name = f"assets/maps/annual/Map_{selected_year}.html"
     with open(map_name, "r") as file:
         html_content = file.read()
     st.components.v1.html(html_content, height=600)
 
 
 # Seasonal AQI Average tab
-def seasonal_tab():
+def display_seasonal_maps():
     st.title("NYC Seasonal Average AQI Heatmap")
 
     # Render slide bar and map slide bar value index to seasonal aqi average tuple
@@ -71,13 +68,11 @@ def seasonal_tab():
     """, unsafe_allow_html=True)
 
     # Generate map name based on user's choice and render the HTML to streamlit
-    map_name = f"data/maps/seasonal/Map_{selected_season}.html"
+    map_name = f"assets/maps/seasonal/Map_{selected_season}.html"
     with open(map_name, "r") as file:
         html_content = file.read()
     st.components.v1.html(html_content, height=600)
     
-
-
 
 
 

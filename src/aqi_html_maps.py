@@ -23,7 +23,7 @@ def ensure_annual_aqi_maps(df):
     '''
 
     for year in ANNUAL_AQI_AVERAGE:
-        map_filename = f"data/maps/annual/Map_{year}.html"
+        map_filename = f"assets/maps/annual/Map_{year}.html"
         if not os.path.exists(map_filename):
             generate_aqi_average_html(df, year, map_filename, is_annual=True)
         else:
@@ -37,7 +37,7 @@ def ensure_seasonal_aqi_maps(df):
     '''
     
     for season in SEASONAL_AQI_AVERAGE:
-        map_filename = f"data/maps/seasonal/Map_{season}.html"
+        map_filename = f"assets/maps/seasonal/Map_{season}.html"
         if not os.path.exists(map_filename):
             generate_aqi_average_html(df, season, map_filename, is_annual=False)
         else:
@@ -54,13 +54,13 @@ def ensure_prediction_maps(time, years=5):
     for future_year in range(curr_year, curr_year + years):
 
         if time == 'Annual':
-            map_filename = f"data/maps/annual/Map_Annual Average {future_year} (Future).html"
+            map_filename = f"assets/maps/annual/Map_Annual Average {future_year} (Future).html"
             model_path = 'models/annual_model.pkl'
         elif time == 'Winter':
-            map_filename = f"data/maps/seasonal/Map_Winter {future_year} (Future).html"
+            map_filename = f"assets/maps/seasonal/Map_Winter {future_year} (Future).html"
             model_path = 'models/winter_model.pkl'
         elif time == 'Summer':
-            map_filename = f"data/maps/seasonal/Map_Summer {future_year} (Future).html"
+            map_filename = f"assets/maps/seasonal/Map_Summer {future_year} (Future).html"
             model_path = 'models/summer_model.pkl'        
         else:
             raise ValueError(f"Invalid time frame: {time}. Expected 'Annual', 'Winter', or 'Summer'.")

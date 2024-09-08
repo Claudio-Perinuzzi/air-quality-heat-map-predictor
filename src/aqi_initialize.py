@@ -9,7 +9,7 @@ import streamlit as st
 
 def initialize():
     '''
-    Initalizes the system by checking and cleaning the raw dataset, calculating AQI values,
+    Initializes the system by checking and cleaning the raw dataset, calculating AQI values,
     calculating and filtering average AQI values for each borough and training a linear regression
     model to predict future AQI values given the past data.
     '''

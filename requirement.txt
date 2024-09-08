@@ -1,0 +1,9 @@
+scikit-learn
+matplotlib
+streamlit
+geopandas
+folium
+pandas
+branca
+pickle
+os

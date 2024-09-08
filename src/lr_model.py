@@ -17,21 +17,23 @@ def ensure_lr_model(df, file_name):
     '''
 
     if not os.path.exists(file_name):
-        # Features and target
+       
+        # Define features and target
         features = ['Borough CD', 'Year']
         target = 'Average AQI'
 
-        # Prepare the data
-        X = df[features]
-        y = df[target]
+        # Prepare the data by extracting features and target into separate variables
+        X = df[features] # X are the features
+        y = df[target]   # y is the target
 
-        # align y with X
+        # Align y with X (will ensure y aligns with the indices of X, prevents mismatch in indices)
         y = y[X.index]  
 
         # Split the data into training and testing sets
+        # 20% for testing and 80% for training, random_state=42 to ensure split is reproducible
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Train the Linear Regression model
+        # Initialize and train a Linear Regression model
         model = LinearRegression()
         model.fit(X_train, y_train)
 
