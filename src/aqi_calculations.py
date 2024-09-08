@@ -1,16 +1,37 @@
 import pandas as pd
-from borough_mapping import *
+from aqi_constants import *
+
+#############################################################################################
+# Functions that include:
+#   AQI calculations for different pollutants
+#   AQI color interpolations for the following:
+#       - A true interpolation function that maps the EPA AQI color to the correct AQI value
+#       - A custom interpolation function that maps NYC's highest and lowest average AQI
+#         value to the respective high and low bounds of the AQI color spectrum 
+#         (from green to magenta). This helps us visualize the changes over time better
+#         since NYC has relatively good AQI values. Making the color differences more
+#         drastic allows us to visualize areas of interest that have higher and lower AQIs
+#############################################################################################
 
 
-# Appends the calculated AQI for each pollutant in the dataframe
+#############################################################################################
+# AQI Calculation Functions
+#############################################################################################
+ 
 def append_aqi_to_df(df):
+    '''Appends the calculated AQI for each pollutant in the dataframe'''
+
     df.loc[df["Name"] == "Fine particles (PM 2.5)", "AQI"] = df["Data Value"].apply(calculate_aqi_pm25)
     df.loc[df["Name"] == "Nitrogen dioxide (NO2)", "AQI"] = df["Data Value"].apply(calculate_aqi_no2)
     df.loc[df["Name"] == "Ozone (O3)", "AQI"] = df["Data Value"].apply(calculate_aqi_o3)
 
 
-# Helper function for calculating the AQI for the given concentration and its defined breakpoints
 def calculate_aqi(concentration, breakpoints):
+    '''
+    Helper function for calculating the AQI for the given 
+    concentration and its defined breakpoints
+    '''
+
     for bp_low, bp_high, i_low, i_high in breakpoints:
         if bp_low <= concentration <= bp_high:
             aqi = ((i_high - i_low) / (bp_high - bp_low)) * (concentration - bp_low) + i_low
@@ -19,8 +40,11 @@ def calculate_aqi(concentration, breakpoints):
     return None
 
 
-# Calculate particulate matter of 2.5 micrometers in diameter (PM2.5)
+
 def calculate_aqi_pm25(concentration):
+    '''
+    Calculate particulate matter of 2.5 micrometers in diameter (PM2.5)
+    '''
 
     # As per EPA guidelines, truncate to 1 decimal place
     concentration = float(f"{concentration:.1f}")
@@ -37,8 +61,10 @@ def calculate_aqi_pm25(concentration):
     return calculate_aqi(concentration, pm25_breakpoints)
 
 
-# Calculate nitrogen dioxide (NO2)
 def calculate_aqi_no2(concentration):
+    '''
+    Calculate nitrogen dioxide (NO2)    
+    '''
     
     # As per EPA guidelines, truncate to integer
     concentration = int(concentration)
@@ -55,9 +81,11 @@ def calculate_aqi_no2(concentration):
     return calculate_aqi(concentration, no2_breakpoints)
 
 
-# Calculate ozone (O3), measured an average of 8 hours in NYC
 def calculate_aqi_o3(concentration):
-    
+    '''
+    Calculate ozone (O3), measured an average of 8 hours in NYC
+    '''     
+
     # As per EPA guidelines, truncate to 3 decimal places
     concentration = float(f"{concentration:.3f}")
 
@@ -104,6 +132,10 @@ def calculate_aqi_average(df, time_period, districts):
     return float(f"{average_value:.2f}")
 
 
+
+#############################################################################################
+# AQI Color Interpolation Functions
+#############################################################################################
 
 def interpolate_true_color(aqi):
     '''
