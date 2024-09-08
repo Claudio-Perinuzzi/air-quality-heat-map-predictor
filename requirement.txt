@@ -1,4 +1,4 @@
-sklearn==1.4.2
+scikit-learn
 matplotlib==3.8.4
 streamlit==1.32.0
 geopandas==0.14.2
