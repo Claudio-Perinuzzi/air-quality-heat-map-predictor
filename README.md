@@ -1,8 +1,10 @@
 # nyc-air-quality-heat-map-predictor
 
-## Usage
+## Usage and Interaction
 
-Application for displaying past and predicted future values of the air quality index (AQI) over New York City's five borough district communities. 
+The NYC AQI Predictor is a web application that visualizes and predicts air quality indices for different neighborhoods in New York City. 
+
+You can try out the app live here: [NYC AQI Predictor App](https://nyc-aqi-predictor.streamlit.app/)
 
 ## Introduction
 
