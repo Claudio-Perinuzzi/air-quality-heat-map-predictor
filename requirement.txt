@@ -5,5 +5,3 @@ geopandas
 folium
 pandas
 branca
-pickle
-os
